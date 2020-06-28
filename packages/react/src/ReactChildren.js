@@ -190,15 +190,6 @@ function mapIntoArray(
       }
     } else if (type === 'object') {
       const childrenString = '' + (children: any);
-      invariant(
-        false,
-        'Objects are not valid as a React child (found: %s). ' +
-          'If you meant to render a collection of children, use an array ' +
-          'instead.',
-        childrenString === '[object Object]'
-          ? 'object with keys {' + Object.keys((children: any)).join(', ') + '}'
-          : childrenString,
-      );
     }
   }
 

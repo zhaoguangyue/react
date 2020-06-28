@@ -36,6 +36,7 @@ export type Interaction = {
 
 // Export all exports so that they're available in tests.
 // We can't use export * from in Flow for some reason.
+// 所有的导出
 export {
   Children,
   createRef,

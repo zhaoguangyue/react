@@ -18,20 +18,30 @@ import {
   REACT_LEGACY_HIDDEN_TYPE,
 } from 'shared/ReactSymbols';
 
+
+
+
+
+// 核心
 import {Component, PureComponent} from './ReactBaseClasses';
 import {createRef} from './ReactCreateRef';
+// react的Children
 import {forEach, map, count, toArray, only} from './ReactChildren';
+//react的dom操作
 import {
   createElement as createElementProd,
   createFactory as createFactoryProd,
   cloneElement as cloneElementProd,
   isValidElement,
 } from './ReactElement';
+// contextAPi
 import {createContext} from './ReactContext';
 import {lazy} from './ReactLazy';
+// React.forwardRef 会创建一个React组件，这个组件能够将其接受的 ref 属性转发到其组件树下的另一个组件中。本来在子组件中定义ref，现在在父组件见中定义，然后传递给子组件
 import {forwardRef} from './ReactForwardRef';
 import {memo} from './ReactMemo';
 import {block} from './ReactBlock';
+// react的hock
 import {
   useCallback,
   useContext,
@@ -49,7 +59,15 @@ import {
   useDeferredValue,
   useOpaqueIdentifier,
 } from './ReactHooks';
+
+
+
+
+
+
+
 import {withSuspenseConfig} from './ReactBatchConfig';
+// 开发调试用
 import {
   createElementWithValidation,
   createFactoryWithValidation,

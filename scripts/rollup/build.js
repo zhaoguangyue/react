@@ -769,18 +769,6 @@ async function buildEverything() {
     await Sync.syncReactDom('build/facebook-www', syncWWWPath);
   }
 
-  console.log(Stats.printResults());
-  if (!forcePrettyOutput) {
-    Stats.saveResults();
-  }
-
-  if (shouldExtractErrors) {
-    console.warn(
-      '\nWarning: this build was created with --extract-errors enabled.\n' +
-        'this will result in extremely slow builds and should only be\n' +
-        'used when the error map needs to be rebuilt.\n'
-    );
-  }
 }
 
 buildEverything();
