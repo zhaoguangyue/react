@@ -789,35 +789,6 @@ function mountClassInstance(
     instance.context = getMaskedContext(workInProgress, unmaskedContext);
   }
 
-  if (__DEV__) {
-    if (instance.state === newProps) {
-      const componentName = getComponentName(ctor) || 'Component';
-      if (!didWarnAboutDirectlyAssigningPropsToState.has(componentName)) {
-        didWarnAboutDirectlyAssigningPropsToState.add(componentName);
-        console.error(
-          '%s: It is not recommended to assign props directly to state ' +
-            "because updates to props won't be reflected in state. " +
-            'In most cases, it is better to use props directly.',
-          componentName,
-        );
-      }
-    }
-
-    if (workInProgress.mode & StrictMode) {
-      ReactStrictModeWarnings.recordLegacyContextWarning(
-        workInProgress,
-        instance,
-      );
-    }
-
-    if (warnAboutDeprecatedLifecycles) {
-      ReactStrictModeWarnings.recordUnsafeLifecycleWarnings(
-        workInProgress,
-        instance,
-      );
-    }
-  }
-
   processUpdateQueue(workInProgress, newProps, instance, renderLanes);
   instance.state = workInProgress.memoizedState;
 

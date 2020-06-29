@@ -448,14 +448,15 @@ export function requestUpdateLane(
   return lane;
 }
 
+// 在fiber里调度更新
 export function scheduleUpdateOnFiber(
-  fiber: Fiber,
-  lane: Lane,
+  fiber: Fiber, //最开始是rootfiber
+  lane: Lane, //
   eventTime: number,
 ) {
+  // 检查嵌套的update
   checkForNestedUpdates();
-  warnAboutRenderPhaseUpdatesInDEV(fiber);
-
+  // 标记更新的lanes从rootfiber中
   const root = markUpdateLaneFromFiberToRoot(fiber, lane);
   if (root === null) {
     warnAboutUpdateOnUnmountedFiberInDEV(fiber);
@@ -531,18 +532,12 @@ function markUpdateLaneFromFiberToRoot(
   lane: Lane,
 ): FiberRoot | null {
   // Update the source fiber's lanes
+  // merger两个lanes，比较优先级，然后赋值给当前fiber的lanes
   fiber.lanes = mergeLanes(fiber.lanes, lane);
   let alternate = fiber.alternate;
+  // 更新备用的lanes
   if (alternate !== null) {
     alternate.lanes = mergeLanes(alternate.lanes, lane);
-  }
-  if (__DEV__) {
-    if (
-      alternate === null &&
-      (fiber.effectTag & (Placement | Hydrating)) !== NoEffect
-    ) {
-      warnAboutUpdateOnNotYetMountedFiberInDEV(fiber);
-    }
   }
   // Walk the parent path to the root and update the child expiration time.
   let node = fiber.return;
@@ -552,14 +547,7 @@ function markUpdateLaneFromFiberToRoot(
   } else {
     while (node !== null) {
       alternate = node.alternate;
-      if (__DEV__) {
-        if (
-          alternate === null &&
-          (node.effectTag & (Placement | Hydrating)) !== NoEffect
-        ) {
-          warnAboutUpdateOnNotYetMountedFiberInDEV(fiber);
-        }
-      }
+     
       node.childLanes = mergeLanes(node.childLanes, lane);
       if (alternate !== null) {
         alternate.childLanes = mergeLanes(alternate.childLanes, lane);
@@ -2824,25 +2812,6 @@ function checkForNestedUpdates() {
   if (nestedUpdateCount > NESTED_UPDATE_LIMIT) {
     nestedUpdateCount = 0;
     rootWithNestedUpdates = null;
-    invariant(
-      false,
-      'Maximum update depth exceeded. This can happen when a component ' +
-        'repeatedly calls setState inside componentWillUpdate or ' +
-        'componentDidUpdate. React limits the number of nested updates to ' +
-        'prevent infinite loops.',
-    );
-  }
-
-  if (__DEV__) {
-    if (nestedPassiveUpdateCount > NESTED_PASSIVE_UPDATE_LIMIT) {
-      nestedPassiveUpdateCount = 0;
-      console.error(
-        'Maximum update depth exceeded. This can happen when a component ' +
-          "calls setState inside useEffect, but useEffect either doesn't " +
-          'have a dependency array, or one of the dependencies changes on ' +
-          'every render.',
-      );
-    }
   }
 }
 

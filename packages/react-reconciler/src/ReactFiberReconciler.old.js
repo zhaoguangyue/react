@@ -245,36 +245,55 @@ export function createContainer(
 }
 
 export function updateContainer(
-  element: ReactNodeList,
-  container: OpaqueRoot,
-  parentComponent: ?React$Component<any, any>,
+  element: ReactNodeList, //element
+  container: OpaqueRoot, //rootFiber
+  parentComponent: ?React$Component<any, any>, //null
   callback: ?Function,
 ): Lane {
- 
+  //从rootfiber中拿出current
   const current = container.current;
+  //请求时间的事件时间，跟优先级相关
   const eventTime = requestEventTime();
-  
+
   const suspenseConfig = requestCurrentSuspenseConfig();
+  // 判断优先级
   const lane = requestUpdateLane(current, suspenseConfig);
 
+  //从父组件中拿到context，以供子树使用
   const context = getContextForSubtree(parentComponent);
+  // 如果当前fiber，没有context，就把父组件的context给当前fiber
   if (container.context === null) {
-    container.context = context;
+  container.context = context;
   } else {
-    container.pendingContext = context;
+  // 否则的话，父组件的context放在当前fiber的pendingContext
+  container.pendingContext = context;
   }
 
+  
+  //依据事件时间，lane，和suspense，创建一个update
+  // 一个upadte的结构如下
+  // const update = {
+  //   eventTime, ：      eventTime
+  //   lane,：            lane
+  //   suspenseConfig,：  suspenseConfig
 
+  //   tag: UpdateState,
+  //   payload: null,     {element}
+  //   callback: null,    callback
+
+  //   next: null,
+  // };
   const update = createUpdate(eventTime, lane, suspenseConfig);
-  // Caution: React DevTools currently depends on this property
-  // being called "element".
+  // 把当前元素放在payload上
   update.payload = {element};
-
+  // 如果有回调，回调也放在update的callback上
   callback = callback === undefined ? null : callback;
   if (callback !== null) {
     update.callback = callback;
   }
 
+  // 加入到队列里 rootfiber中拿出current， 创建的update  current其实也是个fiber
+  // 将update加入到current这个fiber的环形队列里
   enqueueUpdate(current, update);
   scheduleUpdateOnFiber(current, lane, eventTime);
 

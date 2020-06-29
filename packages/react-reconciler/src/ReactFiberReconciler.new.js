@@ -244,70 +244,55 @@ export function createContainer(
   return createFiberRoot(containerInfo, tag, hydrate, hydrationCallbacks);
 }
 
+// element    rootFiber   null 
 export function updateContainer(
-  element: ReactNodeList,
-  container: OpaqueRoot,
-  parentComponent: ?React$Component<any, any>,
+  element: ReactNodeList, //element
+  container: OpaqueRoot, //rootFiber
+  parentComponent: ?React$Component<any, any>, //null
   callback: ?Function,
 ): Lane {
-  if (__DEV__) {
-    onScheduleRoot(container, element);
-  }
+  //从rootfiber中拿出current
   const current = container.current;
+   //请求时间的事件时间，跟优先级相关
   const eventTime = requestEventTime();
-  if (__DEV__) {
-    // $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
-    if ('undefined' !== typeof jest) {
-      warnIfUnmockedScheduler(current);
-      warnIfNotScopedWithMatchingAct(current);
-    }
-  }
+
   const suspenseConfig = requestCurrentSuspenseConfig();
+  // 判断优先级
   const lane = requestUpdateLane(current, suspenseConfig);
 
+  //从父组件中拿到context，以供子树使用
   const context = getContextForSubtree(parentComponent);
+  // 如果当前fiber，没有context，就把父组件的context给当前fiber
   if (container.context === null) {
     container.context = context;
   } else {
+    // 否则的话，父组件的context放在当前fiber的pendingContext
     container.pendingContext = context;
   }
 
-  if (__DEV__) {
-    if (
-      ReactCurrentFiberIsRendering &&
-      ReactCurrentFiberCurrent !== null &&
-      !didWarnAboutNestedUpdates
-    ) {
-      didWarnAboutNestedUpdates = true;
-      console.error(
-        'Render methods should be a pure function of props and state; ' +
-          'triggering nested component updates from render is not allowed. ' +
-          'If necessary, trigger nested updates in componentDidUpdate.\n\n' +
-          'Check the render method of %s.',
-        getComponentName(ReactCurrentFiberCurrent.type) || 'Unknown',
-      );
-    }
-  }
+  //依据事件时间，lane，和suspense，创建一个update
+  // 一个upadte的结构如下
+  // const update = {
+  //   eventTime, ：      eventTime
+  //   lane,：            lane
+  //   suspenseConfig,：  suspenseConfig
 
+  //   tag: UpdateState,
+  //   payload: null,     {element}
+  //   callback: null,    callback
+
+  //   next: null,
+  // };
   const update = createUpdate(eventTime, lane, suspenseConfig);
-  // Caution: React DevTools currently depends on this property
-  // being called "element".
+  // 把当前元素放在payload上
   update.payload = {element};
-
+  // 如果有回调，回调也放在update的callback上
   callback = callback === undefined ? null : callback;
   if (callback !== null) {
-    if (__DEV__) {
-      if (typeof callback !== 'function') {
-        console.error(
-          'render(...): Expected the last optional `callback` argument to be a ' +
-            'function. Instead received: %s.',
-          callback,
-        );
-      }
-    }
     update.callback = callback;
   }
 
+  // 加入到队列里
   enqueueUpdate(current, update);
   scheduleUpdateOnFiber(current, lane, eventTime);
 
